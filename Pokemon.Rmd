@@ -1,0 +1,182 @@
+---
+title: "Which Is The Best Pokemon?"
+author: "Adan Alex Trujillo"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  linestretch: 1.5
+editor_options:
+  chunk_output_type: console
+---
+
+```{r, warning=FALSE, echo=FALSE, message=FALSE, include=FALSE}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(RColorBrewer)
+library(reshape2)
+library(knitr)
+library(kableExtra)
+library(png)
+library(RCurl)
+
+PokemonData <- read_csv("pokemon 2.csv")
+
+# I used a data set that includes data on all pokemon
+
+view(PokemonData)
+names(PokemonData)
+
+Type <- c("Normal", "Fire", "Water", "Grass", "Electric", "Ice", "Fighting",
+          "Poison", "Ground", "Flying", "Psychic", "Bug", "Rock", "Ghost",
+          "Dragon", "Dark", "Steel", "Fairy")
+
+Against_Normal <- c(1,1,1,1,1,1,1,1,1,1,1,1,0.5,0,1,1,0.5,1)
+Against_Fire <- c(1,0.5,0.5,2,1,2,1,1,1,1,1,2,0.5,1,0.5,1,2,1)
+Against_Water <- c(1,2,0.5,0.5,1,1,1,1,2,1,1,1,2,1,0.5,1,1,1)
+Against_Grass <- c(1,0.5,2,0.5,1,1,1,0.5,2,0.5,1,0.5,2,1,0.5,1,0.5,1)
+Against_Electric <- c(1,1,2,0.5,0.5,1,1,1,0,2,1,1,1,1,0.5,1,1,1)
+Against_Ice <- c(1,0.5,0.5,2,1,0.5,1,1,2,2,1,1,1,1,2,1,0.5,1)
+Against_Fighting <- c(2,1,1,1,1,2,1,0.5,1,0.5,0.5,0.5,2,0,1,2,2,0.5)
+Against_Poison <- c(1,1,1,2,1,1,1,0.5,0.5,1,1,1,0.5,0.5,1,1,0,2)
+Against_Ground <- c(1,2,1,0.5,2,1,1,2,1,0,1,0.5,2,1,1,1,2,1)
+Against_Flying <- c(1,1,1,2,0.5,1,2,1,1,1,1,2,0.5,1,1,1,0.5,1)
+Against_Psychic <- c(1,1,1,1,1,1,2,2,1,1,0.5,1,1,1,1,0,0.5,1)
+Against_Bug <- c(1,0.5,1,2,1,1,0.5,0.5,1,0.5,2,1,1,0.5,1,2,0.5,0.5)
+Against_Rock <- c(1,2,1,1,1,2,0.5,1,0.5,2,1,2,1,1,1,1,0.5,1)
+Against_Ghost <- c(0,1,1,1,1,1,1,1,1,1,2,1,1,2,1,0.5,1,1)
+Against_Dragon <- c(1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,0.5,0)
+Against_Dark <- c(1,1,1,1,1,1,0.5,1,1,1,2,1,1,2,1,0.5,1,0.5)
+Against_Steel <- c(1,0.5,0.5,1,0.5,2,1,1,1,1,1,1,2,1,1,1,0.5,2)
+Against_Fairy <- c(1,0.5,1,1,1,1,2,0.5,1,1,1,1,1,1,2,2,0.5,1)
+
+Type_chart <- data.frame(Type, Against_Normal, Against_Fire, Against_Water,
+                        Against_Grass, Against_Electric, Against_Ice, 
+                        Against_Fighting, Against_Poison, Against_Ground, 
+                        Against_Flying, Against_Psychic, Against_Bug, 
+                        Against_Rock, Against_Ghost, Against_Dragon, 
+                        Against_Dark, Against_Steel, Against_Fairy)
+
+# Here I am adding values to each pokemon type and putting them in a seperate data set
+
+view(Type_chart)
+
+type_chart_m <- melt(Type_chart)
+
+heat <- colorRampPalette(rev(brewer.pal(9, 'RdYlBu')), space='Lab')
+
+ggplot(data=type_chart_m, aes(Type, variable)) + geom_tile(aes(fill=value)) + scale_fill_gradientn(colours = heat(100)) + coord_equal() + theme(axis.text.x=element_text(angle=90, hjust=0)) + ggtitle("Effectiveness of different types of Pokemon")
+
+########################################
+
+NoLegend_PM <- PokemonData %>%
+  filter(is_legendary=="0")
+ view(NoLegend_PM)
+
+Type_pct <- NoLegend_PM %>%
+  count(`type1`, sort = T) %>%
+  mutate(percent = n/sum(n))
+
+ggplot(Type_pct, aes(x=`type1`,
+                     y=percent)) +
+  geom_col()
+
+########################################
+
+grassground <- NoLegend_PM %>%
+  filter(type1=="grass",type2=="ground")
+view(grassground)
+
+Torterra <- NoLegend_PM %>%
+  filter(name %in% c("Torterra"))
+
+view(Torterra)
+```
+
+## Brief History
+Pokemon originated in Japan in 1995 and was developed by Satoshi Tajiri. After seeing two 'Gameboy' gaming systems connect with eachother via link cables, he combined that with his interest of insect collecting to create an idea of two players trading and competing with their bugs. With Japanese cities' rural expansion, habitats for insect hunting were being paved over. Tajiri wanted to simulate a feel where children can be able to catch and collect their own "bugs". With the growing success in the video game came the launch of the animated series in 1997. Pokemon became a worldwide success and lead to the creation of later generations. As of late, there are approximately 800 Pokemon that exist in the franchise with more set to be introduced in the near future. 
+
+## Best Pokemon Type?
+There are 18 types of pokemon. Each pokemon is made up of one primary type but some pokemon have two types, a primary and a secondary. In the rules of Pokemon, types have advantages and disadvantages against other pokemon. For example, the figure below reflects how a FIRE type pokemon overpowers a GRASS type, a GRASS type overpowers a WATER type and a WATER type overpowers a FIRE type. The main function of the game is to battle your pokemon against others. For the purpose of this project, I will focus on the attack power of all pokemon as opposed to other factors such as defense or special attacks.  
+
+```{r pressure, echo=FALSE, out.width='35%', fig.align='center'}
+knitr::include_graphics("slide8_typewheel.png")
+```
+
+To figure out how effective each type is, I created a data frame and assigned a numerical value to how effective each attack is from one type to another. 
+
+A ***"Very Effective"*** attack holds a damage multiplier of 2.
+
+A ***"Normal"*** attack holds a damage multiplier of 1.
+
+A ***"Not Very Effective"*** attack holds a damage multiplier of 0.5.
+
+A ***"No Effect"*** attack holds a damage multiplier of 0.
+
+
+```{r, echo=FALSE,results='asis'}
+kable(Type_chart) %>%
+  kable_styling(bootstrap_options="striped", full_width=TRUE, font_size = 6.75) %>%
+  row_spec(0, angle=45)
+```
+
+From that data frame I created a heat chart that shows how effective an attack by each type will be against all types.
+
+```{r,fig.width=8,fig.ali='center',warning=FALSE,echo=FALSE,message=FALSE}
+heat <- colorRampPalette(rev(brewer.pal(9, 'RdYlBu')), space='Lab')
+
+ggplot(data=type_chart_m, aes(Type, variable)) + geom_tile(aes(fill=value)) + scale_fill_gradientn(colours = heat(100)) + coord_equal() + theme(axis.text.x=element_text(angle=90, hjust=0)) + ggtitle("Attack Effectiveness of Each Type")
+```
+
+Now before I refer to the heat chart, I want to look at how many pokemon exist for each type. I created a graph that shows the percentage of each pokemon primary type. It is important to note that this does not include the legendary pokemon.  
+
+```{r,fig.width=12,warning=FALSE,echo=FALSE,message=FALSE}
+ggplot(Type_pct, aes(x=`type1`,
+                     y=percent)) +
+  geom_col()
+```
+
+According to the chart, it appears that majority of pokemon are of Water, Normal, Grass, Bug and Fire type. I figured the best pokemon has to include types that have very effective attack power against these types. Now, looking back at the heat chart, it appears the best pokemon would need to be of Grass or Ground type since they hold very effective attacks against these types. 
+
+## Best Pokemon?
+
+Now to determine the best pokemon I decided to filter out pokemon with both Grass and Ground types. The resulting pokemon is ***Torterra***
+
+```{r}
+grassground <- NoLegend_PM %>%
+  filter(type1=="grass",type2=="ground")
+```
+
+Now that I have a pokemon, I decided to compare his stats against the stats of all pokemon. This does not include legendary pokemon.  
+
+```{r echo=FALSE, out.width='25%'}
+knitr::include_graphics("./torterra.png")
+
+knitr::include_graphics("./Torterra stats.png")
+```
+
+```{r, echo=FALSE, fig.width=4, fig.height=2}
+ggplot(NoLegend_PM, aes(hp)) + geom_density(col="white",fill="yellow", alpha=0.8) + ggtitle("HP") +
+  geom_vline(data = as.tibble(mean(NoLegend_PM$hp)),aes(xintercept = value)) +
+  geom_text(mapping=aes(x=mean(NoLegend_PM$hp), y=0, label= "Mean"),size=4,angle=90,vjust=-0.4,hjust=-1.35) +
+  geom_vline(xintercept=Torterra$hp) +
+  geom_text(mapping=aes(x=Torterra$hp, y=0, label= "Torterra"),size=4,angle=90,vjust=-0.4,hjust=-1)
+```
+
+```{r, echo=FALSE, fig.width=4, fig.height=2 }
+ggplot(NoLegend_PM, aes(attack)) + geom_density(col="white",fill="green", alpha=0.8) + ggtitle("ATTACK") +
+  geom_vline(data = as.tibble(mean(NoLegend_PM$attack)),aes(xintercept = value)) +
+  geom_text(mapping=aes(x=mean(NoLegend_PM$attack), y=0, label= "Mean"),size=4,angle=90,vjust=-0.4,hjust=-1.35) +
+  geom_vline(xintercept=Torterra$attack) +
+  geom_text(mapping=aes(x=Torterra$attack, y=0, label= "Torterra"),size=4,angle=90,vjust=-0.4,hjust=-1)
+```
+
+```{r, echo=FALSE, fig.width=4, fig.height=2}
+ggplot(NoLegend_PM, aes(defense)) + geom_density(col="white",fill="blue", alpha=0.8) + ggtitle("DEFENSE") +
+  geom_vline(data = as.tibble(mean(NoLegend_PM$defense)),aes(xintercept = value)) +
+  geom_text(mapping=aes(x=mean(NoLegend_PM$defense), y=0, label= "Mean"),size=4,angle=90,vjust=-0.4,hjust=-1.35) +
+  geom_vline(xintercept=Torterra$defense) +
+  geom_text(mapping=aes(x=Torterra$defense, y=0, label= "Torterra"),size=4,angle=90,vjust=-0.4,hjust=-1)
+```
+
+As you can see from the charts above, ***Torterra's*** stats fall well above the above the mean on all three factors and because he is of both grass and ground type he holds a type-advantage against majority of all pokemon. 
